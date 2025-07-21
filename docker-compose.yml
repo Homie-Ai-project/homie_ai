@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: homeai-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - homeai-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: homeai-open-webui
+    ports:
+      - "8080:8080"
+    volumes:
+      - open_webui_data:/app/backend/data
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_SECRET_KEY=homeai-secret-key-2025
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    networks:
+      - homeai-network
+
+  webapp:
+    build:
+      context: ./catGPT
+      dockerfile: Dockerfile
+    container_name: homeai-catgpt
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_OLLAMA_API_URL=http://localhost:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    networks:
+      - homeai-network
+    volumes:
+      - ./catGPT:/app
+      - /app/node_modules
+
+volumes:
+  ollama_data:
+  open_webui_data:
+
+networks:
+  homeai-network:
+    driver: bridge
