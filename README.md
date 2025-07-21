@@ -1,6 +1,6 @@
 # HomeAI - Complete Ollama AI Platform
 
-A comprehensive Docker-based AI platform featuring Ollama with multiple web interfaces for AI model interaction.
+A comprehensive Docker-based AI platform featuring Ollama with API and multiple web interfaces for AI model interaction.
 
 ## Features
 
